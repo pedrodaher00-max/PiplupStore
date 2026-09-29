@@ -86,6 +86,8 @@ select{min-height:48px;border-radius:14px;background:var(--surface);border:1px s
 .lang svg{border-radius:3px;display:block}
 .card h3{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
 .detail{margin:0;color:var(--muted);font-size:14px}
+.stock{margin:0;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--fg);font-variant-numeric:tabular-nums}
+.stock::before{content:"";width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 3px rgba(61,220,132,.18)}
 .buy{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:6px}
 .price{font-family:var(--display);font-size:30px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
 .price small{font-size:.6em}
@@ -241,11 +243,11 @@ const PRODUCTS = [
   {id:"blastoise-rad", type:"carta", lang:"pt", name:"Blastoise Radiante", detail:"Pokémon GO · 018/078 · Foil · SP", price:67.28, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6020s_018.jpg", stock:1},
   {id:"bulbasaur-scr", type:"carta", lang:"pt", name:"Bulbasaur", detail:"Coroa Estelar · 143/142 · Foil · NM", price:249.75, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/612/66e30bd80dc28-lerfc-r5bfh-38b9d094ae0f5311dd3dcfbf65069bbb.jpg", stock:1},
   {id:"charizard-rad-pgo", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Pokémon GO · 011/078 · Foil · NM", price:259.99, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6019s_011.jpg", stock:1},
-  {id:"charizard-rad-crz", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Realeza Absoluta · 020/159 · Foil · NM · 2 unid.", price:153.00, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/338/6019_020.jpg", stock:2},
+  {id:"charizard-rad-crz", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Realeza Absoluta · 020/159 · Foil · NM", price:153.00, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/338/6019_020.jpg", stock:2},
   {id:"charmander-svp", type:"carta", lang:"pt", name:"Charmander", detail:"Promo Escarlate e Violeta · 044 · Foil · NM", price:628.89, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/342/665609175a79a-5n8du-yks8b-96aef7592372ff612f85a2591541f820.jpg", stock:1},
   {id:"groudon-primal-en", type:"carta", lang:"en", name:"Groudon Primitivo-EX", detail:"Conflito Primitivo · 151/160 · Foil · MP", price:699.90, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f812596495d-pi7ax-i4z2m-c22c60349630d688cef20a3fd708ad87.jpg", stock:1},
-  {id:"groudon-primal-pt", type:"carta", lang:"pt", name:"Groudon Primitivo-EX", detail:"Conflito Primitivo · 151/160 · Foil · SP · 2 unid.", price:749.50, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f812596495d-pi7ax-i4z2m-c22c60349630d688cef20a3fd708ad87.jpg", stock:2},
-  {id:"groudon-ex-en", type:"carta", lang:"en", name:"Groudon-EX", detail:"Conflito Primitivo · 150/160 · Foil · SP · 3 unid.", price:649.80, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f8125796f16-qzui4-fti3m-c22c60349630d688cef20a3fd708ad87.jpg", stock:3},
+  {id:"groudon-primal-pt", type:"carta", lang:"pt", name:"Groudon Primitivo-EX", detail:"Conflito Primitivo · 151/160 · Foil · SP", price:749.50, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f812596495d-pi7ax-i4z2m-c22c60349630d688cef20a3fd708ad87.jpg", stock:2},
+  {id:"groudon-ex-en", type:"carta", lang:"en", name:"Groudon-EX", detail:"Conflito Primitivo · 150/160 · Foil · SP", price:649.80, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f8125796f16-qzui4-fti3m-c22c60349630d688cef20a3fd708ad87.jpg", stock:3},
   {id:"skyla-bkp", type:"carta", lang:"pt", name:"Skyla", detail:"Turbo Colisão · 122/122 · SP", price:99.67, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/94/1947.122.jpg", stock:1},
   {id:"squirtle-scr", type:"carta", lang:"pt", name:"Squirtle", detail:"Coroa Estelar · 148/142 · Foil · NM", price:269.80, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/612/66e30be105117-x1do6-38m2d-38b9d094ae0f5311dd3dcfbf65069bbb.jpg", stock:1},
   {id:"venusaur-rad", type:"carta", lang:"pt", name:"Venusaur Radiante", detail:"Pokémon GO · 004/078 · Foil · NM", price:125.00, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6018s_004.jpg", stock:1}
@@ -295,6 +297,7 @@ function render(){
       <div class="meta"><span class="lang">${FLAG[p.lang]}${LANG_NAME[p.lang]}</span><span class="lang">${p.type==="carta"?"CARTA":"LACRADO"}</span></div>
       <h3>${esc(p.name)}</h3>
       <p class="detail">${esc(p.detail)}</p>
+      ${sold?"":`<p class="stock">${p.stock} ${p.stock===1?"disponível":"disponíveis"}</p>`}
       <div class="buy"><div class="price">${priceHTML(p.price)}</div>
         <button type="button" class="add" data-add="${p.id}" aria-pressed="${inBag}" ${sold?"disabled":""}>${sold?"Vendido":inBag?"Na sacola ✓":"Adicionar"}</button>
       </div></article>`;
