@@ -236,7 +236,19 @@ const PRODUCTS = [
   {id:"parceiro", type:"lacrado", lang:"pt", name:"Box Coleção Ilustração Parceiro Inicial", detail:"Série 1 · 3 cartas promo · 21 cartas", price:209.90, img:"img/parceiro.jpg", stock:1},
   {id:"pikachu", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Pikachu", detail:"2 boosters · cartela de adesivos", price:230.00, img:"img/pikachu.jpg", stock:1},
   {id:"umbreon", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Umbreon", detail:"2 boosters · cartela de adesivos", price:210.00, img:"img/umbreon.jpg", stock:1},
-  {id:"mew", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Mew", detail:"2 boosters · cartela de adesivos", price:210.00, img:"img/mew.jpg", stock:1}
+  {id:"mew", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Mew", detail:"2 boosters · cartela de adesivos", price:210.00, img:"img/mew.jpg", stock:1},
+  /* cartas avulsas — imagens da LigaPokemon; preço = menor preço na Liga p/ mesma condição e idioma (29/09/2026) */,
+  {id:"blastoise-rad", type:"carta", lang:"pt", name:"Blastoise Radiante", detail:"Pokémon GO · 018/078 · Foil · SP", price:67.28, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6020s_018.jpg", stock:1},
+  {id:"bulbasaur-scr", type:"carta", lang:"pt", name:"Bulbasaur", detail:"Coroa Estelar · 143/142 · Foil · NM", price:249.75, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/612/66e30bd80dc28-lerfc-r5bfh-38b9d094ae0f5311dd3dcfbf65069bbb.jpg", stock:1},
+  {id:"charizard-rad-pgo", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Pokémon GO · 011/078 · Foil · NM", price:259.99, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6019s_011.jpg", stock:1},
+  {id:"charizard-rad-crz", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Realeza Absoluta · 020/159 · Foil · NM · 2 unid.", price:153.00, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/338/6019_020.jpg", stock:2},
+  {id:"charmander-svp", type:"carta", lang:"pt", name:"Charmander", detail:"Promo Escarlate e Violeta · 044 · Foil · NM", price:628.89, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/342/665609175a79a-5n8du-yks8b-96aef7592372ff612f85a2591541f820.jpg", stock:1},
+  {id:"groudon-primal-en", type:"carta", lang:"en", name:"Groudon Primitivo-EX", detail:"Conflito Primitivo · 151/160 · Foil · MP", price:699.90, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f812596495d-pi7ax-i4z2m-c22c60349630d688cef20a3fd708ad87.jpg", stock:1},
+  {id:"groudon-primal-pt", type:"carta", lang:"pt", name:"Groudon Primitivo-EX", detail:"Conflito Primitivo · 151/160 · Foil · SP · 2 unid.", price:749.50, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f812596495d-pi7ax-i4z2m-c22c60349630d688cef20a3fd708ad87.jpg", stock:2},
+  {id:"groudon-ex-en", type:"carta", lang:"en", name:"Groudon-EX", detail:"Conflito Primitivo · 150/160 · Foil · SP · 3 unid.", price:649.80, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/3/68f8125796f16-qzui4-fti3m-c22c60349630d688cef20a3fd708ad87.jpg", stock:3},
+  {id:"skyla-bkp", type:"carta", lang:"pt", name:"Skyla", detail:"Turbo Colisão · 122/122 · SP", price:99.67, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/94/1947.122.jpg", stock:1},
+  {id:"squirtle-scr", type:"carta", lang:"pt", name:"Squirtle", detail:"Coroa Estelar · 148/142 · Foil · NM", price:269.80, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/612/66e30be105117-x1do6-38m2d-38b9d094ae0f5311dd3dcfbf65069bbb.jpg", stock:1},
+  {id:"venusaur-rad", type:"carta", lang:"pt", name:"Venusaur Radiante", detail:"Pokémon GO · 004/078 · Foil · NM", price:125.00, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6018s_004.jpg", stock:1}
 ];
 
 /* ===== daqui pra baixo, a lógica da página ===== */
@@ -279,7 +291,7 @@ function render(){
   grid.innerHTML = list.map(p => {
     const sold = p.stock<=0, inBag = state.bag.has(p.id);
     return `<article class="card${sold?" sold":""}" data-id="${p.id}">
-      <div class="photo">${p.tag&&!sold?`<span class="tag">${esc(p.tag)}</span>`:""}${sold?`<span class="tag">VENDIDO</span>`:""}<img src="${p.img}" alt="${esc(p.name)}" loading="lazy"></div>
+      <div class="photo">${p.tag&&!sold?`<span class="tag">${esc(p.tag)}</span>`:""}${sold?`<span class="tag">VENDIDO</span>`:""}<img src="${p.img}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer"></div>
       <div class="meta"><span class="lang">${FLAG[p.lang]}${LANG_NAME[p.lang]}</span><span class="lang">${p.type==="carta"?"CARTA":"LACRADO"}</span></div>
       <h3>${esc(p.name)}</h3>
       <p class="detail">${esc(p.detail)}</p>
@@ -297,7 +309,7 @@ function renderBag(){
   const total = items.reduce((s,p)=>s+p.price,0);
   document.getElementById("total").textContent = brl(total);
   document.getElementById("items").innerHTML = items.length ? items.map(p=>`
-    <div class="item"><img src="${p.img}" alt=""><div class="t">${esc(p.name)}<span>${LANG_NAME[p.lang].toLowerCase()} · lacrado</span></div>
+    <div class="item"><img src="${p.img}" alt="" referrerpolicy="no-referrer"><div class="t">${esc(p.name)}<span>${LANG_NAME[p.lang].toLowerCase()} · lacrado</span></div>
     <div class="r">${brl(p.price)}<button type="button" class="rm" data-rm="${p.id}">Remover</button></div></div>`).join("")
     : `<div class="empty" style="padding:28px 16px"><strong>Sacola vazia</strong>Toque em "Adicionar" nos produtos que você quer.</div>`;
   const msg = "Olá, PiplupStore! Quero comprar:\n" + items.map(p=>`• ${p.name} (${LANG_NAME[p.lang].toLowerCase()}) — ${brl(p.price)}`).join("\n") + `\n\nTotal: ${brl(total)}\nPagamento via Pix.`;
