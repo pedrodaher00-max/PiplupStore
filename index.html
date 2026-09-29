@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PiplupStore · Pokémon TCG lacrado</title>
+<meta name="description" content="Cartas e produtos Pokémon TCG lacrados com preço de Liga. Pagamento só no Pix, não aceitamos troca. Pedidos pelo WhatsApp.">
+<meta name="theme-color" content="#0e0d24">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PiplupStore · Pokémon TCG lacrado">
+<meta property="og:description" content="Produtos lacrados com preço de Liga. Só Pix · não aceitamos troca. Monte sua sacola e peça pelo WhatsApp.">
+<meta property="og:url" content="https://piplupstore.netlify.app/">
+<meta property="og:image" content="https://piplupstore.netlify.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: vitrine de fichário — faixa de regras no topo, barra de filtros fixa, grade de "cartas" com brilho holográfico, sacola que fecha pelo WhatsApp. Visual escuro único, de propósito. */
+:root{
+  --bg:#0e0d24; --surface:#18173d; --surface-2:#232150; --line:rgba(255,255,255,.13);
+  --fg:#f6f4ff; --muted:#bcb8e0; --gold:#ffd23f; --ink:#1a1030;
+  --pix:#32bcad; --pix-ink:#062b27; --red:#e0362b; --green:#1f9e4a;
+  --display:'Lilita One','Arial Rounded MT Bold',system-ui,sans-serif;
+  --body:'Rubik',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 120px;overflow-x:hidden}
+.wrap{max-width:1180px;margin-inline:auto}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* Topo */
+.hero{position:relative;padding-block:40px 28px;display:flex;flex-direction:column;gap:16px;isolation:isolate}
+.hero::before{content:"";position:absolute;z-index:-1;left:50%;top:-520px;width:1400px;height:1400px;margin-left:-700px;border-radius:50%;
+  background:repeating-conic-gradient(rgba(255,210,63,.09) 0deg 7deg,transparent 7deg 15deg);animation:spin 90s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 20%,transparent 62%);mask:radial-gradient(circle,#000 20%,transparent 62%)}
+.eyebrow{display:inline-flex;align-self:flex-start;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:900;font-size:14px;letter-spacing:.08em}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:blink 1.2s steps(2,start) infinite}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,8vw,76px);line-height:.98;margin:0;text-wrap:balance;text-shadow:0 5px 0 rgba(0,0,0,.35)}
+h1 em{font-style:normal;color:var(--gold)}
+.lede{margin:0;color:var(--muted);font-size:18px;max-width:58ch}
+.rules{display:flex;flex-wrap:wrap;gap:10px}
+.rule{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;font-weight:900;font-size:15px;letter-spacing:.02em}
+.rule svg{flex:none}
+.rule.pix{background:var(--pix);color:var(--pix-ink)}
+.rule.troca{background:var(--red);color:#fff}
+.rule.combina{background:var(--surface-2);color:var(--fg);border:1px solid var(--line)}
+
+/* Barra de filtros */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(14,13,36,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-block:1px solid var(--line);padding-block:12px;margin-inline:-16px;padding-inline:16px}
+.bar-in{max-width:1180px;margin-inline:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted);min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+.search{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:8px;padding:0 14px;min-height:48px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:15px}
+.search input::placeholder{color:var(--muted)}
+select{min-height:48px;border-radius:14px;background:var(--surface);border:1px solid var(--line);padding:0 12px;font-weight:700;font-size:14px}
+
+.count{margin:22px 0 14px;color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums}
+.count b{color:var(--fg)}
+
+/* Grade */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:18px}
+.card{--mx:50%;--my:50%;position:relative;display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:22px;background:var(--surface);border:1px solid var(--line);
+  transition:transform .25s ease,box-shadow .25s ease;min-width:0}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .25s ease;mix-blend-mode:color-dodge;
+  background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.35),transparent 40%),
+  linear-gradient(115deg,transparent 20%,rgba(255,80,160,.28) 35%,rgba(80,200,255,.28) 50%,rgba(255,230,90,.28) 65%,transparent 80%)}
+.card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.card:hover::after{opacity:1}
+.photo{position:relative;aspect-ratio:1/1;max-width:100%;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.photo img{max-width:88%;max-height:88%;object-fit:contain;transition:transform .35s ease}
+.card:hover .photo img{transform:scale(1.05) rotate(-1deg)}
+.tag{position:absolute;left:10px;top:10px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.06em;background:var(--ink);color:var(--gold)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lang{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.05em;background:var(--surface-2);border:1px solid var(--line)}
+.lang svg{border-radius:3px;display:block}
+.card h3{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.detail{margin:0;color:var(--muted);font-size:14px}
+.buy{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:6px}
+.price{font-family:var(--display);font-size:30px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.price small{font-size:.6em}
+.add{border:0;border-radius:12px;min-height:44px;padding:0 14px;background:var(--gold);color:var(--ink);font-weight:900;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.add[aria-pressed="true"]{background:var(--pix);color:var(--pix-ink)}
+.card.sold{opacity:.55}
+.card.sold .photo img{filter:grayscale(1)}
+.card.sold .add{background:var(--surface-2);color:var(--muted);cursor:not-allowed}
+
+.empty{grid-column:1/-1;padding:40px 24px;border-radius:22px;border:2px dashed var(--line);text-align:center;color:var(--muted)}
+.empty strong{display:block;font-family:var(--display);font-weight:400;font-size:28px;color:var(--fg);margin-bottom:6px}
+
+/* Rodapé / contato */
+.contact{margin-top:48px;padding:24px;border-radius:22px;background:var(--surface);border:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.contact h2{margin:0 0 4px;font-family:var(--display);font-weight:400;font-size:28px}
+.contact p{margin:0;color:var(--muted);max-width:52ch}
+.phone{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phone code{font-family:var(--body);font-weight:900;font-size:20px;padding:10px 14px;border-radius:12px;background:var(--surface-2);user-select:all;font-variant-numeric:tabular-nums}
+.ghost{border:1px solid var(--line);background:transparent;border-radius:12px;min-height:44px;padding:0 14px;font-weight:700}
+.fine{margin-top:18px;color:var(--muted);font-size:13px}
+
+/* Sacola */
+.bagbtn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;border:0;border-radius:999px;min-height:58px;padding:0 22px 0 18px;
+  background:var(--gold);color:var(--ink);font-weight:900;font-size:16px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.bagbtn .n{min-width:26px;height:26px;border-radius:999px;background:var(--ink);color:var(--gold);display:grid;place-items:center;font-size:14px}
+.bagbtn.bump{animation:bump .4s ease}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;justify-content:flex-end;background:rgba(5,4,20,.6)}
+.panel{width:min(420px,100%);height:100%;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+.panel header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel h2{margin:0;font-family:var(--display);font-weight:400;font-size:30px}
+.items{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;min-height:0}
+.item{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:8px;border-radius:14px;background:var(--surface-2)}
+.item img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:10px}
+.item .t{font-weight:700;font-size:14px;line-height:1.25;min-width:0}
+.item .t span{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.item .r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rm{border:0;background:transparent;color:var(--muted);font-size:13px;text-decoration:underline;min-height:32px}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding-block:14px;border-top:1px solid var(--line);margin-top:12px}
+.total b{font-family:var(--display);font-weight:400;font-size:34px;color:var(--gold);font-variant-numeric:tabular-nums}
+.go{display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;border-radius:16px;background:var(--pix);color:var(--pix-ink);font-weight:900;font-size:17px;text-decoration:none}
+.go[aria-disabled="true"]{background:var(--surface-2);color:var(--muted);pointer-events:none}
+.note{margin:10px 0 0;color:var(--muted);font-size:13px;text-align:center}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{to{visibility:hidden}}
+@keyframes bump{50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (max-width:560px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .card{padding:10px;gap:8px}
+  .card h3{font-size:15px}
+  .price{font-size:24px}
+  .buy{flex-direction:column;align-items:stretch}
+  .add{justify-content:center}
+  .seg button{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>À VENDA · PRODUTOS LACRADOS</span>
+    <h1 id="storeName">Piplup<em>Store</em></h1>
+    <p class="lede">Cartas e produtos Pokémon TCG do acervo da PiplupStore, com preço baseado no mínimo da LigaPokemon. Escolha, monte sua sacola e feche o pedido direto no WhatsApp.</p>
+    <div class="rules">
+      <span class="rule pix"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L22 12L12 22L2 12Z"/><path d="M7.5 12L12 7.5L16.5 12L12 16.5Z"/></svg>Pagamento só no Pix</span>
+      <span class="rule troca"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 8L16 16M16 8L8 16"/></svg>Não aceitamos troca</span>
+      <span class="rule combina"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>Entrega combinada no WhatsApp</span>
+    </div>
+  </header>
+</div>
+
+<nav class="bar" aria-label="Filtros">
+  <div class="bar-in">
+    <div class="seg" role="group" aria-label="Tipo">
+      <button type="button" data-type="all" aria-pressed="true">Tudo</button>
+      <button type="button" data-type="lacrado" aria-pressed="false">Lacrados</button>
+      <button type="button" data-type="carta" aria-pressed="false">Cartas avulsas</button>
+    </div>
+    <div class="seg" role="group" aria-label="Idioma">
+      <button type="button" data-lang="all" aria-pressed="true">Todos</button>
+      <button type="button" data-lang="pt" aria-pressed="false">Português</button>
+      <button type="button" data-lang="en" aria-pressed="false">Inglês</button>
+    </div>
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" placeholder="Buscar: Pikachu, 30 anos, ETB…" autocomplete="off">
+    </label>
+    <label for="sort" style="position:absolute;left:-9999px">Ordenar</label>
+    <select id="sort">
+      <option value="featured">Destaques</option>
+      <option value="asc">Menor preço</option>
+      <option value="desc">Maior preço</option>
+    </select>
+  </div>
+</nav>
+
+<main class="wrap">
+  <p class="count" id="count" aria-live="polite"></p>
+  <section class="grid" id="grid" aria-label="Produtos"></section>
+
+  <section class="contact" aria-labelledby="ct">
+    <div>
+      <h2 id="ct">Fale comigo</h2>
+      <p>Pedidos, dúvidas e fotos extras pelo WhatsApp. Pagamento só via Pix e não aceitamos troca.</p>
+    </div>
+    <div class="phone">
+      <code id="phone"></code>
+      <button type="button" class="ghost" id="copyPhone">Copiar número</button>
+    </div>
+  </section>
+  <p class="fine">Preços de referência: mínimo da LigaPokemon na data de publicação. Estoque sujeito a disponibilidade; confirme no WhatsApp antes do Pix.</p>
+</main>
+
+<button type="button" class="bagbtn" id="bagBtn" aria-haspopup="dialog">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+  Sacola <span class="n" id="bagN">0</span>
+</button>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="bagTitle">
+  <div class="panel">
+    <header>
+      <h2 id="bagTitle">Sua sacola</h2>
+      <button type="button" class="ghost" id="closeBag">Fechar</button>
+    </header>
+    <div class="items" id="items"></div>
+    <div class="total"><span>Total</span><b id="total">R$ 0,00</b></div>
+    <a class="go" id="go" href="#" target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>
+      Finalizar pelo WhatsApp
+    </a>
+    <p class="note" id="goNote">Pagamento só no Pix · Não aceitamos troca</p>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIGURAÇÃO DA LOJA ===== */
+const STORE = {
+  whatsapp: "5548991320107",            // DDI + DDD + número, só dígitos. Ex.: 5511999998888
+};
+
+/* ===== ESTOQUE ===== type: "lacrado" | "carta"; lang: "pt" | "en"; stock 0 = vendido */
+const PRODUCTS = [
+  {id:"excelsos", type:"lacrado", lang:"pt", name:"Combo de Pacotes Heróis Excelsos", detail:"Megaevolução · 18 boosters · 108 cartas", price:378.00, img:"img/excelsos.jpg", stock:1, tag:"Destaque"},
+  {id:"etb30", type:"lacrado", lang:"en", name:"Elite Trainer Box Celebração 30 Anos", detail:"30th Celebration · edição de aniversário", price:949.99, img:"img/etb30.jpg", stock:1, tag:"30 anos"},
+  {id:"combo30", type:"lacrado", lang:"pt", name:"Combo de Pacotes Celebração 30 Anos", detail:"6 boosters · 36 cartas", price:369.00, img:"img/combo30.jpg", stock:1, tag:"30 anos"},
+  {id:"gengar151", type:"lacrado", lang:"en", name:"Mini Lata 151 Gengar & Poliwag", detail:"Scarlet & Violet 151 · 2 boosters", price:375.00, img:"img/gengar151.jpg", stock:1},
+  {id:"parceiro", type:"lacrado", lang:"pt", name:"Box Coleção Ilustração Parceiro Inicial", detail:"Série 1 · 3 cartas promo · 21 cartas", price:199.99, img:"img/parceiro.jpg", stock:1},
+  {id:"pikachu", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Pikachu", detail:"2 boosters · cartela de adesivos", price:239.90, img:"img/pikachu.jpg", stock:1},
+  {id:"umbreon", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Umbreon", detail:"2 boosters · cartela de adesivos", price:239.90, img:"img/umbreon.jpg", stock:1},
+  {id:"mew", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Mew", detail:"2 boosters · cartela de adesivos", price:239.90, img:"img/mew.jpg", stock:1}
+];
+
+/* ===== daqui pra baixo, a lógica da página ===== */
+const FLAG = {
+  pt:'<svg width="22" height="15" viewBox="0 0 44 30" aria-hidden="true"><rect width="44" height="30" fill="#1f9e4a"/><path d="M22 4L40 15L22 26L4 15Z" fill="#ffd21f"/><circle cx="22" cy="15" r="6.5" fill="#1f3f99"/></svg>',
+  en:'<svg width="22" height="15" viewBox="0 0 44 30" aria-hidden="true"><rect width="44" height="30" fill="#fff"/><g fill="#c8202f"><rect y="0" width="44" height="2.3"/><rect y="4.6" width="44" height="2.3"/><rect y="9.2" width="44" height="2.3"/><rect y="13.8" width="44" height="2.3"/><rect y="18.4" width="44" height="2.3"/><rect y="23" width="44" height="2.3"/><rect y="27.6" width="44" height="2.4"/></g><rect width="19" height="16.2" fill="#2b3a8f"/></svg>'
+};
+const LANG_NAME = {pt:"PORTUGUÊS", en:"INGLÊS"};
+const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const priceHTML = v => { const [a,b] = brl(v).split(","); return `${a}<small>,${b}</small>`; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const state = { type:"all", lang:"all", q:"", sort:"featured", bag: new Set() };
+try { const saved = JSON.parse(localStorage.getItem("bag")||"[]"); saved.forEach(id => PRODUCTS.some(p=>p.id===id && p.stock>0) && state.bag.add(id)); } catch(e) {}
+const saveBag = () => { try { localStorage.setItem("bag", JSON.stringify([...state.bag])); } catch(e) {} };
+
+const grid = document.getElementById("grid");
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+
+function visible(){
+  let list = PRODUCTS.filter(p =>
+    (state.type==="all" || p.type===state.type) &&
+    (state.lang==="all" || p.lang===state.lang) &&
+    (!state.q || norm(p.name+" "+p.detail).includes(norm(state.q))));
+  if (state.sort==="asc") list = [...list].sort((a,b)=>a.price-b.price);
+  if (state.sort==="desc") list = [...list].sort((a,b)=>b.price-a.price);
+  return [...list.filter(p=>p.stock>0), ...list.filter(p=>p.stock<=0)];
+}
+
+function render(){
+  const list = visible();
+  const avail = list.filter(p=>p.stock>0).length;
+  document.getElementById("count").innerHTML = `<b>${avail}</b> ${avail===1?"item disponível":"itens disponíveis"}`;
+  if (!list.length){
+    grid.innerHTML = state.type==="carta"
+      ? `<div class="empty"><strong>Cartas avulsas chegando</strong>As cartas do acervo entram aqui em breve. Procurando alguma específica? Chama no WhatsApp.</div>`
+      : `<div class="empty"><strong>Nada encontrado</strong>Tente outro filtro ou outra busca.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p => {
+    const sold = p.stock<=0, inBag = state.bag.has(p.id);
+    return `<article class="card${sold?" sold":""}" data-id="${p.id}">
+      <div class="photo">${p.tag&&!sold?`<span class="tag">${esc(p.tag)}</span>`:""}${sold?`<span class="tag">VENDIDO</span>`:""}<img src="${p.img}" alt="${esc(p.name)}" loading="lazy"></div>
+      <div class="meta"><span class="lang">${FLAG[p.lang]}${LANG_NAME[p.lang]}</span><span class="lang">${p.type==="carta"?"CARTA":"LACRADO"}</span></div>
+      <h3>${esc(p.name)}</h3>
+      <p class="detail">${esc(p.detail)}</p>
+      <div class="buy"><div class="price">${priceHTML(p.price)}</div>
+        <button type="button" class="add" data-add="${p.id}" aria-pressed="${inBag}" ${sold?"disabled":""}>${sold?"Vendido":inBag?"Na sacola ✓":"Adicionar"}</button>
+      </div></article>`;
+  }).join("");
+}
+
+function waLink(text){ return STORE.whatsapp ? `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(text)}` : ""; }
+
+function renderBag(){
+  const items = PRODUCTS.filter(p=>state.bag.has(p.id));
+  document.getElementById("bagN").textContent = items.length;
+  const total = items.reduce((s,p)=>s+p.price,0);
+  document.getElementById("total").textContent = brl(total);
+  document.getElementById("items").innerHTML = items.length ? items.map(p=>`
+    <div class="item"><img src="${p.img}" alt=""><div class="t">${esc(p.name)}<span>${LANG_NAME[p.lang].toLowerCase()} · lacrado</span></div>
+    <div class="r">${brl(p.price)}<button type="button" class="rm" data-rm="${p.id}">Remover</button></div></div>`).join("")
+    : `<div class="empty" style="padding:28px 16px"><strong>Sacola vazia</strong>Toque em "Adicionar" nos produtos que você quer.</div>`;
+  const msg = "Olá, PiplupStore! Quero comprar:\n" + items.map(p=>`• ${p.name} (${LANG_NAME[p.lang].toLowerCase()}) — ${brl(p.price)}`).join("\n") + `\n\nTotal: ${brl(total)}\nPagamento via Pix.`;
+  const go = document.getElementById("go"), link = waLink(msg);
+  const ok = items.length && link;
+  go.setAttribute("aria-disabled", ok ? "false" : "true");
+  go.href = ok ? link : "#";
+  document.getElementById("goNote").textContent = !STORE.whatsapp ? "O número de WhatsApp da loja ainda não foi configurado." : "Pagamento só no Pix · Não aceitamos troca";
+}
+
+function formatPhone(d){
+  if (!d) return "em breve";
+  const m = d.match(/^55(\d{2})(\d{4,5})(\d{4})$/);
+  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : "+" + d;
+}
+
+document.querySelectorAll("[data-type]").forEach(b=>b.addEventListener("click",()=>{ state.type=b.dataset.type; document.querySelectorAll("[data-type]").forEach(x=>x.setAttribute("aria-pressed", x===b)); render(); }));
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>{ state.lang=b.dataset.lang; document.querySelectorAll("[data-lang]").forEach(x=>x.setAttribute("aria-pressed", x===b)); render(); }));
+document.getElementById("q").addEventListener("input",e=>{ state.q=e.target.value.trim(); render(); });
+document.getElementById("sort").addEventListener("change",e=>{ state.sort=e.target.value; render(); });
+
+grid.addEventListener("click",e=>{
+  const b = e.target.closest("[data-add]"); if (!b || b.disabled) return;
+  const id = b.dataset.add;
+  state.bag.has(id) ? state.bag.delete(id) : state.bag.add(id);
+  saveBag(); render(); renderBag();
+  const bb = document.getElementById("bagBtn"); bb.classList.remove("bump"); void bb.offsetWidth; bb.classList.add("bump");
+});
+grid.addEventListener("pointermove",e=>{
+  const c = e.target.closest(".card"); if (!c) return;
+  const r = c.getBoundingClientRect();
+  c.style.setProperty("--mx", ((e.clientX-r.left)/r.width*100)+"%");
+  c.style.setProperty("--my", ((e.clientY-r.top)/r.height*100)+"%");
+});
+
+const sheet = document.getElementById("sheet");
+document.getElementById("bagBtn").addEventListener("click",()=>{ renderBag(); sheet.hidden=false; document.getElementById("closeBag").focus(); });
+document.getElementById("closeBag").addEventListener("click",()=>{ sheet.hidden=true; document.getElementById("bagBtn").focus(); });
+sheet.addEventListener("click",e=>{ if (e.target===sheet) sheet.hidden=true; });
+document.getElementById("items").addEventListener("click",e=>{
+  const b = e.target.closest("[data-rm]"); if (!b) return;
+  state.bag.delete(b.dataset.rm); saveBag(); render(); renderBag();
+});
+
+const phoneEl = document.getElementById("phone");
+phoneEl.textContent = formatPhone(STORE.whatsapp);
+document.getElementById("copyPhone").addEventListener("click", async ev=>{
+  const btn = ev.currentTarget;
+  if (!STORE.whatsapp) return;
+  try { await navigator.clipboard.writeText(formatPhone(STORE.whatsapp)); btn.textContent="Copiado!"; }
+  catch(e){ const r=document.createRange(); r.selectNodeContents(phoneEl); const s=getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent="Selecionado, copie"; }
+  setTimeout(()=>btn.textContent="Copiar número",1800);
+});
+
+render(); renderBag();
+</script>
+</body>
+</html>
