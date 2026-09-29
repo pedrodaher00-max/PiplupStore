@@ -92,7 +92,15 @@ select{min-height:48px;border-radius:14px;background:#fff;border:1px solid var(-
 .price small{font-size:.6em}
 .add{border:0;border-radius:12px;min-height:44px;padding:0 14px;background:var(--beak);color:var(--navy);font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 0 #d69a12}
 .add:active{transform:translateY(2px);box-shadow:0 1px 0 #d69a12}
-.add[aria-pressed="true"]{background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--sea)}
+.qty{display:inline-flex;align-items:center;border-radius:12px;background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--sea);min-height:44px;overflow:hidden}
+.qty button{border:0;background:transparent;color:inherit;width:40px;min-height:44px;font-size:22px;font-weight:800;line-height:1;display:grid;place-items:center}
+.qty button:hover:not(:disabled){background:rgba(255,255,255,.14)}
+.qty button:disabled{opacity:.35;cursor:not-allowed}
+.qty output{min-width:30px;text-align:center;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+.qty.sm{min-height:36px;box-shadow:none}
+.qty.sm button{width:34px;min-height:36px;font-size:19px}
+.item .qty{margin-top:6px}
+.maxnote{margin:0;font-size:12px;color:var(--muted)}
 .card.sold{opacity:.55}
 .card.sold .photo img{filter:grayscale(1)}
 .card.sold .add{background:var(--ice-2);color:var(--muted);box-shadow:none;cursor:not-allowed}
@@ -152,6 +160,7 @@ select{min-height:48px;border-radius:14px;background:#fff;border:1px solid var(-
   .price{font-size:24px}
   .buy{flex-direction:column;align-items:stretch}
   .add{justify-content:center}
+  .buy .qty{justify-content:space-between}
   .seg button{padding:8px 10px}
   .art{border-width:4px;border-radius:22px}
   .art img{aspect-ratio:16/9;object-position:50% 40%}
@@ -261,7 +270,7 @@ const PRODUCTS = [
   {id:"pikachu", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Pikachu", detail:"2 boosters · cartela de adesivos", price:230.00, img:"img/pikachu.jpg", stock:1},
   {id:"umbreon", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Umbreon", detail:"2 boosters · cartela de adesivos", price:210.00, img:"img/umbreon.jpg", stock:1},
   {id:"mew", type:"lacrado", lang:"en", name:"Mini Lata 30 Anos Mew", detail:"2 boosters · cartela de adesivos", price:210.00, img:"img/mew.jpg", stock:1},
-  /* cartas avulsas — imagens da LigaPokemon; preço = menor preço na Liga p/ mesma condição e idioma (29/09/2026) */,
+  /* cartas avulsas — imagens da LigaPokemon; preço = menor preço na Liga p/ mesma condição e idioma (29/09/2026) */
   {id:"blastoise-rad", type:"carta", lang:"pt", name:"Blastoise Radiante", detail:"Pokémon GO · 018/078 · Foil · SP", price:67.28, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6020s_018.jpg", stock:1},
   {id:"bulbasaur-scr", type:"carta", lang:"pt", name:"Bulbasaur", detail:"Coroa Estelar · 143/142 · Foil · NM", price:249.75, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/612/66e30bd80dc28-lerfc-r5bfh-38b9d094ae0f5311dd3dcfbf65069bbb.jpg", stock:1},
   {id:"charizard-rad-pgo", type:"carta", lang:"pt", name:"Charizard Radiante", detail:"Pokémon GO · 011/078 · Foil · NM", price:259.99, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/274/6019s_011.jpg", stock:1},
@@ -285,9 +294,24 @@ const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const priceHTML = v => { const [a,b] = brl(v).split(","); return `${a}<small>,${b}</small>`; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-const state = { type:"all", lang:"all", q:"", sort:"featured", bag: new Set() };
-try { const saved = JSON.parse(localStorage.getItem("bag")||"[]"); saved.forEach(id => PRODUCTS.some(p=>p.id===id && p.stock>0) && state.bag.add(id)); } catch(e) {}
-const saveBag = () => { try { localStorage.setItem("bag", JSON.stringify([...state.bag])); } catch(e) {} };
+const state = { type:"all", lang:"all", q:"", sort:"featured", bag: new Map() };   // bag: id -> quantidade
+const byId = id => PRODUCTS.find(p=>p.id===id);
+try {
+  const saved = JSON.parse(localStorage.getItem("bag")||"{}");
+  const entries = Array.isArray(saved) ? saved.map(id=>[id,1]) : Object.entries(saved);
+  entries.forEach(([id,n]) => { const p = byId(id); if (p && p.stock>0) state.bag.set(id, Math.min(p.stock, Math.max(1, n|0))); });
+} catch(e) {}
+const saveBag = () => { try { localStorage.setItem("bag", JSON.stringify(Object.fromEntries(state.bag))); } catch(e) {} };
+function setQty(id, n){
+  const p = byId(id); if (!p) return;
+  n = Math.min(p.stock, n);
+  n > 0 ? state.bag.set(id, n) : state.bag.delete(id);
+  saveBag(); render(); renderBag();
+}
+const qtyHTML = (p, n, sm) => `<div class="qty${sm?" sm":""}" role="group" aria-label="Quantidade de ${esc(p.name)}">
+  <button type="button" data-dec="${p.id}" aria-label="${n===1?"Tirar da sacola":"Diminuir"}">−</button>
+  <output aria-live="polite">${n}</output>
+  <button type="button" data-inc="${p.id}" aria-label="Aumentar" ${n>=p.stock?`disabled title="Só temos ${p.stock} em estoque"`:""}>+</button></div>`;
 
 const grid = document.getElementById("grid");
 const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -313,7 +337,7 @@ function render(){
     return;
   }
   grid.innerHTML = list.map(p => {
-    const sold = p.stock<=0, inBag = state.bag.has(p.id);
+    const sold = p.stock<=0, n = state.bag.get(p.id)||0;
     return `<article class="card${sold?" sold":""}" data-id="${p.id}">
       <div class="photo">${p.tag&&!sold?`<span class="tag">${esc(p.tag)}</span>`:""}${sold?`<span class="tag">VENDIDO</span>`:""}<img src="${p.img}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer"></div>
       <div class="meta"><span class="lang">${FLAG[p.lang]}${LANG_NAME[p.lang]}</span><span class="lang">${p.type==="carta"?"CARTA":"LACRADO"}</span></div>
@@ -321,8 +345,8 @@ function render(){
       <p class="detail">${esc(p.detail)}</p>
       ${sold?"":`<p class="stock">${p.stock} ${p.stock===1?"disponível":"disponíveis"}</p>`}
       <div class="buy"><div class="price">${priceHTML(p.price)}</div>
-        <button type="button" class="add" data-add="${p.id}" aria-pressed="${inBag}" ${sold?"disabled":""}>${sold?"Vendido":inBag?"Na sacola ✓":"Adicionar"}</button>
-      </div></article>`;
+        ${n ? qtyHTML(p, n) : `<button type="button" class="add" data-add="${p.id}" ${sold?"disabled":""}>${sold?"Vendido":"Adicionar"}</button>`}
+      </div>${n && n>=p.stock && p.stock>1 ? `<p class="maxnote">Você pegou todas as ${p.stock} unidades.</p>` : ""}</article>`;
   }).join("");
 }
 
@@ -330,14 +354,15 @@ function waLink(text){ return STORE.whatsapp ? `https://wa.me/${STORE.whatsapp}?
 
 function renderBag(){
   const items = PRODUCTS.filter(p=>state.bag.has(p.id));
-  document.getElementById("bagN").textContent = items.length;
-  const total = items.reduce((s,p)=>s+p.price,0);
+  const q = p => state.bag.get(p.id);
+  document.getElementById("bagN").textContent = items.reduce((s,p)=>s+q(p),0);
+  const total = items.reduce((s,p)=>s+p.price*q(p),0);
   document.getElementById("total").textContent = brl(total);
   document.getElementById("items").innerHTML = items.length ? items.map(p=>`
-    <div class="item"><img src="${p.img}" alt="" referrerpolicy="no-referrer"><div class="t">${esc(p.name)}<span>${LANG_NAME[p.lang].toLowerCase()} · lacrado</span></div>
-    <div class="r">${brl(p.price)}<button type="button" class="rm" data-rm="${p.id}">Remover</button></div></div>`).join("")
+    <div class="item"><img src="${p.img}" alt="" referrerpolicy="no-referrer"><div class="t">${esc(p.name)}<span>${LANG_NAME[p.lang].toLowerCase()} · ${p.type==="carta"?"carta":"lacrado"}${q(p)>1?` · ${brl(p.price)} cada`:""}</span>${qtyHTML(p, q(p), true)}</div>
+    <div class="r">${brl(p.price*q(p))}<button type="button" class="rm" data-rm="${p.id}">Remover</button></div></div>`).join("")
     : `<div class="empty" style="padding:28px 16px"><strong>Sacola vazia</strong>Toque em "Adicionar" nos produtos que você quer.</div>`;
-  const msg = "Olá, PiplupStore! Quero comprar:\n" + items.map(p=>`• ${p.name} (${LANG_NAME[p.lang].toLowerCase()}) — ${brl(p.price)}`).join("\n") + `\n\nTotal: ${brl(total)}\nPagamento via Pix.`;
+  const msg = "Olá, PiplupStore! Quero comprar:\n" + items.map(p=>`• ${q(p)}x ${p.name} (${LANG_NAME[p.lang].toLowerCase()}${p.type==="carta"?" · "+p.detail:""}) — ${brl(p.price*q(p))}`).join("\n") + `\n\nTotal: ${brl(total)}\nPagamento via Pix.`;
   const go = document.getElementById("go"), link = waLink(msg);
   const ok = items.length && link;
   go.setAttribute("aria-disabled", ok ? "false" : "true");
@@ -356,13 +381,17 @@ document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",(
 document.getElementById("q").addEventListener("input",e=>{ state.q=e.target.value.trim(); render(); });
 document.getElementById("sort").addEventListener("change",e=>{ state.sort=e.target.value; render(); });
 
-grid.addEventListener("click",e=>{
-  const b = e.target.closest("[data-add]"); if (!b || b.disabled) return;
-  const id = b.dataset.add;
-  state.bag.has(id) ? state.bag.delete(id) : state.bag.add(id);
-  saveBag(); render(); renderBag();
-  const bb = document.getElementById("bagBtn"); bb.classList.remove("bump"); void bb.offsetWidth; bb.classList.add("bump");
-});
+function qtyClick(e, root){
+  const b = e.target.closest("[data-add],[data-inc],[data-dec],[data-rm]"); if (!b || b.disabled) return;
+  const [kind, id] = Object.entries(b.dataset)[0];
+  const n = state.bag.get(id)||0;
+  setQty(id, kind==="add"||kind==="inc" ? n+1 : kind==="dec" ? n-1 : 0);
+  // devolve o foco ao controle equivalente depois de redesenhar
+  const again = root.querySelector(`[data-${kind}="${id}"]:not(:disabled)`) || root.querySelector(`[data-inc="${id}"]:not(:disabled),[data-dec="${id}"],[data-add="${id}"]`);
+  if (again) again.focus();
+  if (kind==="add"||kind==="inc"){ const bb = document.getElementById("bagBtn"); bb.classList.remove("bump"); void bb.offsetWidth; bb.classList.add("bump"); }
+}
+grid.addEventListener("click",e=>qtyClick(e, grid));
 grid.addEventListener("pointermove",e=>{
   const c = e.target.closest(".card"); if (!c) return;
   const r = c.getBoundingClientRect();
@@ -374,10 +403,7 @@ const sheet = document.getElementById("sheet");
 document.getElementById("bagBtn").addEventListener("click",()=>{ renderBag(); sheet.hidden=false; document.getElementById("closeBag").focus(); });
 document.getElementById("closeBag").addEventListener("click",()=>{ sheet.hidden=true; document.getElementById("bagBtn").focus(); });
 sheet.addEventListener("click",e=>{ if (e.target===sheet) sheet.hidden=true; });
-document.getElementById("items").addEventListener("click",e=>{
-  const b = e.target.closest("[data-rm]"); if (!b) return;
-  state.bag.delete(b.dataset.rm); saveBag(); render(); renderBag();
-});
+document.getElementById("items").addEventListener("click",e=>qtyClick(e, document.getElementById("items")));
 
 const phoneEl = document.getElementById("phone");
 phoneEl.textContent = formatPhone(STORE.whatsapp);
