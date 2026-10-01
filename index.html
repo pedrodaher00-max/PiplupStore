@@ -90,6 +90,8 @@ select{min-height:48px;border-radius:14px;background:#fff;border:1px solid var(-
 .buy{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:6px}
 .price{font-family:var(--display);font-size:30px;line-height:1;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
 .price small{font-size:.6em}
+.price .ask{font-family:var(--body);font-size:15px;font-weight:900;color:var(--muted);white-space:normal;line-height:1.2;display:block}
+a.add{text-decoration:none;justify-content:center}
 .add{border:0;border-radius:12px;min-height:44px;padding:0 14px;background:var(--beak);color:var(--navy);font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 0 #d69a12}
 .add:active{transform:translateY(2px);box-shadow:0 1px 0 #d69a12}
 .qty{display:inline-flex;align-items:center;border-radius:12px;background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--sea);min-height:44px;overflow:hidden}
@@ -285,6 +287,13 @@ const PRODUCTS = [
   /* 30 Anos à venda — preço = menor valor na Liga (print do dono, 01/10/2026) */
   {id:"charizard-004-cc", type:"carta", lang:"pt", name:"Charizard", detail:"Cartas Clássicas 30 Anos · 004/30 · Foil · NM", price:1199.89, img:"img/charizard-004-cc.jpg", stock:1},
   {id:"lugia-149-cc", type:"carta", lang:"pt", name:"Lugia", detail:"Cartas Clássicas 30 Anos · 149/30 · Foil · NM", price:799.90, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/805/6aa31e0274694-4mfb0-7nstq-80f3daba75988e3024982b9f5dc0cfa5.jpg", stock:1},
+  /* treinadores Full Art — price:null = "Preço sob consulta" até conferir na Liga (menor preço, mesmo estado e idioma) */
+  {id:"lilian-169-meg", type:"carta", lang:"pt", name:"Determinação da Lílian", detail:"Megaevolução · 169/132 · Full Art · NM", price:null, img:"img/lilian-169-meg.jpg", stock:2},
+  {id:"boss-cyrus-fa-en", type:"carta", lang:"en", name:"Boss's Orders (Cyrus)", detail:"Brilliant Stars · Full Art · NM", price:null, img:"img/boss-cyrus-fa-en.jpg", stock:2},
+  {id:"plinio-164-scr", type:"carta", lang:"pt", name:"Plínio", detail:"Coroa Estelar · 164/142 · Full Art · NM", price:null, img:"img/plinio-164-scr.jpg", stock:3},
+  {id:"plinio-164-scr-d", type:"carta", lang:"pt", name:"Plínio", detail:"Coroa Estelar · 164/142 · Full Art · D (danificada)", price:null, img:"img/plinio-164-scr.jpg", stock:1},
+  {id:"hilda-fa", type:"carta", lang:"pt", name:"Hilda", detail:"Full Art · NM", price:null, img:"img/hilda-fa.jpg", stock:3},
+  {id:"dawn-118-pfl", type:"carta", lang:"pt", name:"Dawn", detail:"Fogo Fantasmagórico · 118/094 · Full Art · NM", price:null, img:"img/dawn-118-pfl.jpg", stock:3},
   /* cartas 30 Anos — guardadas para coleção: colecao:true tira da loja sem apagar (preço = menor loja na Liga, mesmo idioma, NM, 29/09/2026). Para voltar a vender, apague colecao:true. */
   {id:"mewex-158-en", type:"carta", colecao:true, lang:"en", name:"Mew ex", detail:"Celebração de 30 Anos · 158/128 · Rara Futurista · NM", price:849.90, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/804/6aa3036931a30-vj0wr-36bxy-4f8828816b7a72c953a10e0ea3a71f2e.jpg", stock:1},
   {id:"celebi-106c-cc", type:"carta", colecao:true, lang:"pt", name:"Celebi Luminescente", detail:"Cartas Clássicas 30 Anos · 106c/30 · Foil · NM", price:222.90, img:"https://repositorio.sbrauble.com/arquivos/in/pokemon_bkp/cd/805/6aa31df9ec3ed-lhgr9-1yoid-80f3daba75988e3024982b9f5dc0cfa5.jpg", stock:1},
@@ -306,11 +315,11 @@ const FLAG = {
 };
 const LANG_NAME = {pt:"PORTUGUÊS", en:"INGLÊS"};
 const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const priceHTML = v => { const [a,b] = brl(v).split(","); return `${a}<small>,${b}</small>`; };
+const priceHTML = v => { if (v==null) return `<span class="ask">Preço sob consulta</span>`; const [a,b] = brl(v).split(","); return `${a}<small>,${b}</small>`; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const state = { type:"all", lang:"all", q:"", sort:"featured", bag: new Map() };   // bag: id -> quantidade
-const byId = id => PRODUCTS.find(p=>p.id===id && !p.colecao);
+const byId = id => PRODUCTS.find(p=>p.id===id && !p.colecao && p.price!=null);
 try {
   const saved = JSON.parse(localStorage.getItem("bag")||"{}");
   const entries = Array.isArray(saved) ? saved.map(id=>[id,1]) : Object.entries(saved);
@@ -336,8 +345,8 @@ function visible(){
     (state.type==="all" || p.type===state.type) &&
     (state.lang==="all" || p.lang===state.lang) &&
     (!state.q || norm(p.name+" "+p.detail).includes(norm(state.q))));
-  if (state.sort==="asc") list = [...list].sort((a,b)=>a.price-b.price);
-  if (state.sort==="desc") list = [...list].sort((a,b)=>b.price-a.price);
+  if (state.sort==="asc") list = [...list].sort((a,b)=>(a.price??Infinity)-(b.price??Infinity));
+  if (state.sort==="desc") list = [...list].sort((a,b)=>(b.price??-1)-(a.price??-1));
   return [...list.filter(p=>p.stock>0), ...list.filter(p=>p.stock<=0)];
 }
 
@@ -360,7 +369,7 @@ function render(){
       <p class="detail">${esc(p.detail)}</p>
       ${sold?"":`<p class="stock">${p.stock} ${p.stock===1?"disponível":"disponíveis"}</p>`}
       <div class="buy"><div class="price">${priceHTML(p.price)}</div>
-        ${n ? qtyHTML(p, n) : `<button type="button" class="add" data-add="${p.id}" ${sold?"disabled":""}>${sold?"Vendido":"Adicionar"}</button>`}
+        ${p.price==null && !sold ? `<a class="add" href="${waLink(`Olá, PiplupStore! Qual o preço de: ${p.name} (${LANG_NAME[p.lang].toLowerCase()} · ${p.detail})?`)}" target="_blank" rel="noopener">Consultar</a>` : n ? qtyHTML(p, n) : `<button type="button" class="add" data-add="${p.id}" ${sold?"disabled":""}>${sold?"Vendido":"Adicionar"}</button>`}
       </div>${n && n>=p.stock && p.stock>1 ? `<p class="maxnote">Você pegou todas as ${p.stock} unidades.</p>` : ""}</article>`;
   }).join("");
 }
